@@ -7,12 +7,16 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    // Fetch initial transactions from the backend API
+  const fetchTransactions = async () => {
     fetch("http://localhost:8001/transactions")
       .then((response) => response.json())
       .then((data) => setTransactions(data))
       .catch((error) => console.error("Error fetching transactions:", error));
+  };
+
+  useEffect(() => {
+    // Fetch initial transactions from the backend API
+    fetchTransactions();
   }, []);
 
   const addTransaction = (newTransaction) => {
@@ -35,6 +39,12 @@ function App() {
     transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDelete = (id) => {
+    fetch(`http://localhost:8001/transactions/${id}`, { method: "DELETE" })
+      .then((res) => res.json())
+      .then((data) => fetchTransactions());
+  };
+
   return (
     <div className="ui raised segment">
       <div className="ui segment violet inverted">
@@ -42,7 +52,10 @@ function App() {
       </div>
       <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <AddTransactionForm addTransaction={addTransaction} />
-      <TransactionsList transactions={filteredTransactions} />
+      <TransactionsList
+        transactions={filteredTransactions}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 }
